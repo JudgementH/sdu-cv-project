@@ -43,8 +43,12 @@ def get_lead_image(image, scale=0.5):
                           lam_x * lam_y * small[true_y + 1][true_x + 1]
     return large.astype(np.uint8)
 
+
 @jit(nopython=True)
-def jbf(image_f, image_g, window_size=2, sigma_f=1, sigma_g=1):
+def jbf(image_f, image_g, window_size=5, sigma_f=1, sigma_g=1):
+    if window_size % 2 == 0:
+        raise Exception("窗口大小必须是奇数")
+    window_size = window_size // 2
     h, w, c = image_f.shape
     h_, w_, c_ = image_g.shape
     if h != h_ and w != w_ and c != c_:
@@ -56,7 +60,7 @@ def jbf(image_f, image_g, window_size=2, sigma_f=1, sigma_g=1):
     d_f = np.ones(shape=(window_size * 2 + 1, window_size * 2 + 1))
     for y in range(-window_size, window_size + 1):
         for x in range(-window_size, window_size + 1):
-            d_f[y + window_size][x + window_size] = np.sqrt(y ** 2 + x ** 2)
+            d_f[y + window_size][x + window_size] = y ** 2 + x ** 2
     for y in range(window_size, window_size + step_y):
         for x in range(window_size, window_size + step_x):
             # result[y][x] = get_pix_jbf(
@@ -65,17 +69,19 @@ def jbf(image_f, image_g, window_size=2, sigma_f=1, sigma_g=1):
             #     sigma_f,
             #     sigma_g)
             for ch in range(c):
+                window_f = image_f[y - window_size: y + window_size + 1,
+                           x - window_size: x + window_size + 1,
+                           ch]
                 window_g = image_g[y - window_size: y + window_size + 1,
                            x - window_size: x + window_size + 1,
                            ch]
-                result_f = np.exp((-d_f ** 2) / (2 * sigma_f ** 2))
-                d_g = np.sqrt((window_g - result[y][x][ch]) ** 2)
-                result_g = np.exp((-d_g ** 2) / (2 * sigma_g ** 2))
-                result[y][x][ch] = np.sum(result_f * result_g * window_g) / np.sum(result_f * result_g)
+                result_f = np.exp((-d_f) / (2 * sigma_f ** 2))
+                d_g = (window_g - result[y][x][ch]) ** 2
+                result_g = np.exp((-d_g) / (2 * sigma_g ** 2))
+                result[y][x][ch] = np.sum(result_f * result_g * window_f) / np.sum(result_f * result_g)
     return result.astype(np.uint8)
 
 
-@jit
 def get_pix_jbf(window_f, window_g, sigma_f, sigma_g):
     center_x = window_f.shape[0] // 2
     center_y = window_f.shape[0] // 2
@@ -100,7 +106,6 @@ if __name__ == '__main__':
     time1 = time()
     lead = get_lead_image(img)
     print("引导图计算时间:{time}s".format(time=(time() - time1)))
-
 
     time2 = time()
     after = jbf(img, lead, window_size=21, sigma_f=10, sigma_g=10)

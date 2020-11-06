@@ -31,7 +31,7 @@ def conv2D(image, kernel):
 
 def gauss_blur(image, sigma=1):
     size = (6 * sigma - 1) // 2 * 2 + 1
-    if size // 2 == 1:
+    if size % 2 == 0:
         raise Exception("卷积核必须是奇数")
     a, b, c = image[:, :, 0], image[:, :, 1], image[:, :, 2]
 
