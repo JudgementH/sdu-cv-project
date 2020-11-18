@@ -61,13 +61,9 @@ def jbf(image_f, image_g, window_size=5, sigma_f=1, sigma_g=1):
     for y in range(-window_size, window_size + 1):
         for x in range(-window_size, window_size + 1):
             d_f[y + window_size][x + window_size] = y ** 2 + x ** 2
+
     for y in range(window_size, window_size + step_y):
         for x in range(window_size, window_size + step_x):
-            # result[y][x] = get_pix_jbf(
-            #     image_f[y - window_size: y + window_size + 1, x - window_size: x + window_size + 1, :].astype(float),
-            #     image_g[y - window_size: y + window_size + 1, x - window_size: x + window_size + 1, :].astype(float),
-            #     sigma_f,
-            #     sigma_g)
             for ch in range(c):
                 window_f = image_f[y - window_size: y + window_size + 1,
                            x - window_size: x + window_size + 1,
@@ -111,6 +107,7 @@ if __name__ == '__main__':
     after = jbf(img, lead, window_size=21, sigma_f=10, sigma_g=10)
     print("jbf计算时间:{time}s".format(time=(time() - time2)))
 
+    cv2.imshow('origin',img)
     cv2.imshow('lead', lead)
     cv2.imshow('jbf', after)
     cv2.waitKey()

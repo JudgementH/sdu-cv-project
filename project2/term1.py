@@ -84,6 +84,7 @@ def gauss_blur_1D(image, sigma=1):
 if __name__ == '__main__':
     origin = r"F:\Image\2-1\a.jpg"
     img = cv2.imread(origin)
+    cv2.imshow('origin',img)
 
     # 二维
     time1 = time()
