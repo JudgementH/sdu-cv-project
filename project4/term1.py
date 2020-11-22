@@ -124,11 +124,24 @@ def have_eyes(image):
         return False
 
 
+def have_mouth(image):
+    h, w, c = image.shape
+    b, g, r = (image[:, :, i] for i in range(3))
+
+    return True
+
+
+def is_face(image):
+    h, w = image.shape
+    n = np.count_nonzero(image)
+    ratio = n / (h * w)
+    if 0.4 < ratio < 0.8:
+        return True
+    else:
+        return False
+
+
 if __name__ == '__main__':
-    # a = np.array([[0, 255, 0],
-    #               [255, 0, 255]])
-    # co = get_connected_component_bfs(a)
-    # input()
     image = cv2.imread('./Orical1.jpg')
     skin = get_skin(image)
     cv2.imshow('skin', skin)
@@ -137,28 +150,13 @@ if __name__ == '__main__':
         max_top, max_right, max_bottom, max_left = component
         height_com = max_bottom - max_top
         width_com = max_right - max_left
-        # res = cv2.rectangle(image, (max_left, max_top), (max_right, max_bottom), (0, 255, 0), 2)
-        if width_com != 0 and 0.6 < height_com / width_com < 2:  # “三庭五眼 ”规则高度和宽度比例应该在（ 0.6, 2）内”
-            if have_eyes(skin[max_top:max_bottom + 1, max_left:max_right]):
+        face_reg = skin[max_top:max_bottom + 1, max_left:max_right + 1]
+        if width_com != 0 and 0.6 < height_com / width_com < 2 and width_com > image.shape[
+            1] * 0.05 and height_com > image.shape[0] * 0.05:  # “三庭五眼 ”规则高度和宽度比例应该在（ 0.6, 2）内”
+            if have_eyes(face_reg) and is_face(face_reg):
                 image = cv2.rectangle(image, (max_left, max_top), (max_right, max_bottom), (0, 255, 0), 2)
 
     cv2.imshow('res', image)
-
-    # skin_labeled = measure.label(skin, connectivity=2)  ##八邻域
-    # dst = color.label2rgb(skin_labeled)
-    # cv2.imshow('dst', dst)
-    # count_face = 0
-    # for region in measure.regionprops(skin_labeled):  # https://blog.csdn.net/m0_37678226/article/details/94620482
-    #
-    #     min_row, min_col, max_row, max_col = region.bbox
-    #
-    #     if (max_row - min_row) / image.shape[0] > 1 / 15 and (max_col - min_col) / image.shape[1] > 0.05:
-    #         height_width_ratio = (max_row - min_row) / (max_col - min_col)
-    #         if 0.6 < height_width_ratio < 2.0:
-    #             if iseyes(skin, min_row, min_col, max_row, max_col):
-    #                 # print(height_width_ratio)
-    #                 count_face = count_face + 1
-    #                 img = cv2.rectangle(image, (min_col, min_row), (max_col, max_row), (0, 255, 0), 2)
 
     cv2.waitKey()
     cv2.destroyAllWindows()
