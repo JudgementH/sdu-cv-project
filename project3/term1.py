@@ -35,7 +35,7 @@ if __name__ == '__main__':
     url = './lab2.png'
     image = cv2.imread(url)
     cv2.imshow('origin', image)
-    output = scale(image, 3.6, 3.6)
+    output = scale(image, 1.2, 0.8)
     cv2.imshow('out', output)
     cv2.waitKey()
     cv2.destroyAllWindows()

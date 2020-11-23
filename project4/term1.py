@@ -14,6 +14,15 @@ import sys
 sys.setrecursionlimit(2 ** 31 - 1)
 
 
+def get_ycrcb(image):
+    b, g, r = (image[:, :, i] for i in range(3))
+    y = 0.257 * r + 0.504 * g + 0.098 * b + 16
+    cb = -0.148 * r - 0.291 * g + 0.439 * b + 128
+    cr = 0.439 * r - 0.368 * g - 0.071 * b + 128
+    ycrcb = cv2.merge([y, cr, cb]).astype(np.uint8)
+    return ycrcb
+
+
 def get_skin(image: np.ndarray) -> np.ndarray:
     '''
     参考文章
@@ -21,6 +30,7 @@ def get_skin(image: np.ndarray) -> np.ndarray:
     '''
     h, w, c = image.shape
     ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCR_CB)
+    # ycrcb = get_ycrcb(image)
     y, cr, cb = (ycrcb[:, :, i] for i in range(3))
     res = np.zeros(shape=cr.shape, dtype=np.uint8)
     for i in range(h):
@@ -142,7 +152,7 @@ def is_face(image):
 
 
 if __name__ == '__main__':
-    image = cv2.imread('./Orical1.jpg')
+    image = cv2.imread('./Orical2.jpg')
     skin = get_skin(image)
     cv2.imshow('skin', skin)
     components = get_connected_component(skin)
